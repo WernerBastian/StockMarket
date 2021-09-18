@@ -83,6 +83,7 @@
     <Compile Include="AbstractRow.cs" />
     <Compile Include="Acao.cs" />
     <Compile Include="AcoesCollection.cs" />
+    <Compile Include="AcoesJsonReader.cs" />
     <Compile Include="ConfigForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -230,7 +230,6 @@ namespace StockMarket
             // Minimun
             // 
             this.Minimun.DataPropertyName = "Minimun";
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Red;
             this.Minimun.DefaultCellStyle = dataGridViewCellStyle2;
             this.Minimun.HeaderText = "Mínimo";
             this.Minimun.Name = "Minimun";
@@ -240,7 +239,6 @@ namespace StockMarket
             // Maximun
             // 
             this.Maximun.DataPropertyName = "Maximun";
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Green;
             this.Maximun.DefaultCellStyle = dataGridViewCellStyle3;
             this.Maximun.HeaderText = "Máximo";
             this.Maximun.Name = "Maximun";

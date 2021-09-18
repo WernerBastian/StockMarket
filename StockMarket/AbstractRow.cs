@@ -72,28 +72,6 @@ namespace StockMarket
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string CalculateMD5()
-        {
-            var values = string.Empty;
-            var properties = this.GetType().GetProperties();
-
-            foreach (var property in properties)
-                if (property.Name != "Id")
-                    values += property.GetValue(this);
-
-            using (var md5 = MD5.Create())
-            {
-                var inputBytes = Encoding.ASCII.GetBytes(values);
-                var hashBytes = md5.ComputeHash(inputBytes);
-
-                var sb = new StringBuilder();
-                foreach (byte bytes in hashBytes)
-                    sb.Append(bytes.ToString("X2"));
-
-                return sb.ToString();
-            }
-        }
-
         [Browsable(false)]
         public int Id { get; set; }
 
@@ -195,29 +173,6 @@ namespace StockMarket
 
             #endregion
 
-            #region Rentabilidade
-
-            var closedPrice = acao.ClosedPrice;
-            //var openingPrice = acao.OppeningPrice;
-            var lastPrice = acao.Price;
-
-            var differencePriceValue = lastPrice - closedPrice;
-            var differencePricePercentage = (differencePriceValue / closedPrice) * 100;
-
-            if (this.RentabilidadePerc != differencePricePercentage.ToString("#,##0.00"))
-            {
-                this.RentabilidadePerc = differencePricePercentage.ToString("#,##0.00");
-                this.OnPropertyChanged("RentabilidadePerc");
-            }
-
-            if (this.RentabilidadeValor != differencePriceValue.ToString("#,##0.00"))
-            {
-                this.RentabilidadeValor = differencePriceValue.ToString("#,##0.00");
-                this.OnPropertyChanged("RentabilidadeValor");
-            }
-
-            #endregion
-
             #region Volume
 
             this.Volume = acao.Volume > 1000000 ? (acao.Volume / 1000000M).ToString("#,##0.000") + "M" : acao.Volume.ToString("#,##0");
@@ -226,7 +181,6 @@ namespace StockMarket
             #endregion
         }
 
-        // Create the OnPropertyChanged method to raise the event
         protected void OnPropertyChanged(string name)
         {
             PropertyChangedEventHandler handler = PropertyChanged;

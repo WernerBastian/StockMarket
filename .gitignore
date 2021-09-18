@@ -3,3 +3,8 @@
 ################################################################################
 
 /.vs
+/packages
+/StockMarket/bin/Debug
+/StockMarket/obj/Debug
+/StockMarket/StockMarket.csproj.user
+/StockMarket/obj/Release

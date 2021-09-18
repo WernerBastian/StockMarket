@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PriceMonitor;
+using System;
 using System.ComponentModel;
 
 namespace StockMarket
@@ -8,6 +9,19 @@ namespace StockMarket
         public Acao()
         {
 
+        }
+
+        public Acao(AcoesJsonReaderPrice acoesJsonReader)
+        {
+            this.RequestedDate = DateTime.Now;
+            this.Date = acoesJsonReader.UT;
+            this.OppeningPrice = acoesJsonReader.Ps.OP;
+            this.ClosedPrice = acoesJsonReader.Ps.CP;
+            this.Price = acoesJsonReader.Ps.P;
+            this.MinimunPrice = acoesJsonReader.Ps.MnP;
+            this.MaximunPrice = acoesJsonReader.Ps.MxP;
+            this.AveragePrice = acoesJsonReader.Ps.AvP;
+            this.Volume = acoesJsonReader.Ps.V;
         }
 
         public DateTime RequestedDate { get; set; }

@@ -3,9 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace StockMarket
@@ -62,6 +60,28 @@ namespace StockMarket
             return tabPageControlList;
         }
 
+        private void RunMonitoringControls(List<TabPage> tabPagesControlList)
+        {
+            this._webMonitor.Run((List<AcoesCollection> acoesCollections) =>
+            {
+                if (acoesCollections == null || !acoesCollections.Any())
+                    return;
+
+                this.Invoke(new Action(() =>
+                {
+                    this.UpdateAbstract(acoesCollections);
+
+                    foreach (var tabPageControl in tabPagesControlList)
+                    {
+                        if (!tabPageControl.Visible)
+                            continue;
+
+                        ((PriceMonitorControl)tabPageControl.Controls[0]).UpdateControl(acoesCollections);
+                    }
+                }));
+            });
+        }
+
         private void LoadAbstract(List<AcoesCollection> acoesCollections)
         {
             if (acoesCollections == null)
@@ -74,6 +94,25 @@ namespace StockMarket
 
             this.Day.HeaderText = "Dia " + DateTime.Now.ToString("dd/MM/yyyy");
             this.dgvAbstract.DataSource = this._table;
+        }
+
+        private void UpdateAbstract(List<AcoesCollection> acoesCollections)
+        {
+            if (acoesCollections == null || !acoesCollections.Any())
+                return;
+
+            foreach (var acoesCollection in acoesCollections)
+            {
+                var acao = acoesCollection.Acoes.LastOrDefault(x => x.RequestedDate.ToString("dd/MM/yyyy") == DateTime.Now.ToString("dd/MM/yyyy"));
+
+                if (acao == null)
+                    continue;
+
+                var row = this._table.First(x => x.Name == acoesCollection.Name);
+                row.UpdateValue(acao);
+            }
+
+            this.Day.HeaderText = "Dia " + DateTime.Now.ToString("dd/MM/yyyy");
         }
 
         #endregion
@@ -111,6 +150,7 @@ namespace StockMarket
             this.LoadAbstract(acoesMonitorList);
 
             var tabsControls = this.CreateTabsControls();
+            this.RunMonitoringControls(tabsControls);
         }
 
         private void tsmClose_Click(object sender, EventArgs e)
@@ -147,7 +187,6 @@ namespace StockMarket
 
             tabPage.Controls.Add(priceMonitorControl);
 
-            //var acoesMonitorList = WebMonitor.LoadFromFile(name);
             var acoesMonitorList = this._webMonitor.AcoesCollections;
 
             priceMonitorControl.UpdateControl(acoesMonitorList);
