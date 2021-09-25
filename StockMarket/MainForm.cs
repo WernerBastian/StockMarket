@@ -108,8 +108,12 @@ namespace StockMarket
                 if (acao == null)
                     continue;
 
-                var row = this._table.First(x => x.Name == acoesCollection.Name);
-                row.UpdateValue(acao);
+                var row = this._table.FirstOrDefault(x => x.Name == acoesCollection.Name);
+
+                if (row == null)
+                    this._table.Add(new AbstractRow(DateTime.Now, acoesCollection));
+                else
+                    row.UpdateValue(acao);
             }
 
             this.Day.HeaderText = "Dia " + DateTime.Now.ToString("dd/MM/yyyy");

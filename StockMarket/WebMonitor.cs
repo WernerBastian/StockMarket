@@ -35,6 +35,7 @@ namespace PriceMonitor
         public WebMonitor(string[] acoes)
         {
             this._acoes = acoes;
+            this.LoadBestGateway(acoes);
         }
 
         #endregion
@@ -45,7 +46,6 @@ namespace PriceMonitor
         private string _urlTemplate = "https://{0}.easynvest.com.br/iwg/snapshot/?t=webgateway&c=9999999&q=";
         private string[] _acoes;
         private string[] _gateways = { "mdgateway", "mdgateway01", "mdgateway02", "mdgateway03", "mdgateway04", "mdgateway06" };
-        private Dictionary<string, decimal> _minValues = new Dictionary<string, decimal>();
 
         #endregion
 
@@ -58,7 +58,7 @@ namespace PriceMonitor
             {
                 if (this._acoesCollection == null)
                 {
-                    this._acoesCollection = new List<AcoesCollection>();
+                    this._acoesCollection = this.LoadFromFile();
 
                     if (!this._acoesCollection.Any())
                     {
@@ -70,9 +70,6 @@ namespace PriceMonitor
                             this._acoesCollection.Add(collection);
                         }
                     }
-
-                    foreach (var acoes in this._acoesCollection)
-                        this._minValues.Add(acoes.Name, acoes.Acoes.LastOrDefault()?.MinimunPrice ?? 0M);
                 }
 
                 return this._acoesCollection;
@@ -94,6 +91,67 @@ namespace PriceMonitor
         #endregion
 
         #region Private Methods
+
+        private List<AcoesCollection> LoadFromFile()
+        {
+            if (!Directory.Exists("DataFiles"))
+                Directory.CreateDirectory("DataFiles");
+
+            var acoesMonitorList = new List<AcoesCollection>();
+
+            foreach (var file in Directory.EnumerateFiles("DataFiles"))
+            {
+                if (!this._acoes.Any(x => x == Path.GetFileNameWithoutExtension(file)))
+                    continue;
+
+                var acoes = new AcoesCollection();
+
+                using (var sr = new StreamReader(file))
+                {
+                    while (true)
+                    {
+                        var line = (sr.ReadLine() ?? "").Trim();
+
+                        if (string.IsNullOrEmpty(line))
+                            break;
+
+                        if (!line.Contains(";"))
+                            continue;
+
+                        var coulumns = line.Count(x => x == ';');
+                        if (coulumns != 9)
+                            while (coulumns < 9)
+                            {
+                                coulumns++;
+                                line = line + ";";
+                            }
+
+                        var splitedLine = line.Split(';');
+
+                        if (!acoes.Acoes.Any())
+                            acoes.Name = splitedLine[0];
+
+                        acoes.Acoes.Add(new Acao()
+                        {
+                            RequestedDate = Convert.ToDateTime(splitedLine[1]),
+                            Date = Convert.ToDateTime(splitedLine[2]),
+                            OppeningPrice = Convert.ToDecimal(splitedLine[3]),
+                            Price = Convert.ToDecimal(splitedLine[4]),
+                            MinimunPrice = Convert.ToDecimal(string.IsNullOrEmpty(splitedLine[5]) ? "0" : splitedLine[5]),
+                            MaximunPrice = Convert.ToDecimal(string.IsNullOrEmpty(splitedLine[6]) ? "0" : splitedLine[6]),
+                            AveragePrice = Convert.ToDecimal(string.IsNullOrEmpty(splitedLine[7]) ? "0" : splitedLine[7]),
+                            Volume = Convert.ToDecimal(string.IsNullOrEmpty(splitedLine[8]) ? "0" : splitedLine[8]),
+                            ClosedPrice = Convert.ToDecimal(string.IsNullOrEmpty(splitedLine[9]) ? "0" : splitedLine[9])
+                        });
+                    }
+                }
+
+                if (acoes.Acoes.Any())
+                    acoesMonitorList.Add(acoes);
+            }
+
+            return acoesMonitorList;
+        }
 
         private AcoesJsonReaderPriceCollection DeserializeJson(string json)
         {
@@ -150,6 +208,26 @@ namespace PriceMonitor
             {
                 return string.Empty;
             }
+        }
+
+        private void SaveToFile(string name, Acao acao)
+        {
+            if (!Directory.Exists("DataFiles"))
+                Directory.CreateDirectory("DataFiles");
+
+            var spliter = ";";
+            using (var sw = new StreamWriter(Path.Combine("DataFiles", name + ".txt"), true))
+                sw.WriteLine(
+                    name + spliter +
+                    acao.RequestedDate + spliter +
+                    acao.Date + spliter +
+                    acao.OppeningPrice + spliter +
+                    acao.Price + spliter +
+                    acao.MinimunPrice + spliter +
+                    acao.MaximunPrice + spliter +
+                    acao.AveragePrice + spliter +
+                    acao.Volume + spliter +
+                    acao.ClosedPrice);
         }
 
 
@@ -266,102 +344,108 @@ namespace PriceMonitor
             {
                 while (true)
                 {
-                    // Verifica se o mercado esta aberto
-                    if (!this.IsMarketOpened)
+                    try
                     {
-                        Thread.Sleep(60000);
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(this._url))
-                    {
-                        //Retesta os gateways
-                        this.LoadBestGateway(this._acoes);
-
-                        if (string.IsNullOrEmpty(this._url))
+                        // Verifica se o mercado esta aberto
+                        if (!this.IsMarketOpened)
                         {
                             Thread.Sleep(60000);
                             continue;
                         }
-                    }
 
-                    var currentGateway = new Uri(this._url).Host;
-                    currentGateway = currentGateway.Substring(0, currentGateway.IndexOf("."));
-
-                    var json = this.RequestJson(this._url);
-
-                    if (string.IsNullOrWhiteSpace(json))
-                    {
-                        //Retesta os gateways
-                        this.LoadBestGateway(this._acoes);
-
-                        Thread.Sleep(60000);
-                        continue;
-                    }
-
-                    var acoesJsonReader = this.DeserializeJson(json);
-
-                    var errorMessage = string.Empty;
-
-                    if (acoesJsonReader.Value.Count != this._acoes.Length)
-                        errorMessage = $"A URL designada não retornou todos os dados solicitados ({currentGateway}).\r\n    Apenas {acoesJsonReader.Value.Count} de {this._acoes.Length}.";
-
-                    DateTime? lastDate = null;
-
-                    var zeroValue = new List<string>();
-                    if (acoesJsonReader != null)
-                    {
-                        foreach (var jsonAcao in acoesJsonReader.Value)
+                        if (string.IsNullOrEmpty(this._url))
                         {
-                            var name = jsonAcao.S;
-                            var acao = new Acao(jsonAcao);
+                            //Retesta os gateways
+                            this.LoadBestGateway(this._acoes);
 
-                            lastDate = acao.RequestedDate;
-
-                            if (acao.OppeningPrice <= 0 || acao.Price <= 0)
+                            if (string.IsNullOrEmpty(this._url))
                             {
-                                zeroValue.Add(name);
+                                Thread.Sleep(60000);
                                 continue;
                             }
-
-                            var acoesMonitor = this.AcoesCollections.FirstOrDefault(x => x.Name == name);
-                            if (acoesMonitor != null)
-                                acoesMonitor.Acoes.Add(acao);
-                            else
-                                this.AcoesCollections.Add(new AcoesCollection(name, acao));
                         }
-                    }
 
-                    if (zeroValue.Any())
-                    {
-                        if (!string.IsNullOrWhiteSpace(errorMessage))
-                            errorMessage += Environment.NewLine + Environment.NewLine;
+                        var currentGateway = new Uri(this._url).Host;
+                        currentGateway = currentGateway.Substring(0, currentGateway.IndexOf("."));
 
-                        errorMessage += $"As Seguintes acões possuem valor zerado ({currentGateway}):{Environment.NewLine}    {string.Join(Environment.NewLine + "    ", zeroValue)}";
-                    }
+                        var json = this.RequestJson(this._url);
 
-                    callback(this.AcoesCollections);
-
-                    var count = 0;
-
-                    foreach (var acoes in this.AcoesCollections)
-                    {
-                        var last = acoes.Acoes.LastOrDefault();
-
-                        if (last == null || last.RequestedDate.ToString("dd/MM/yyyy HH:mm") != lastDate.GetValueOrDefault().ToString("dd/MM/yyyy HH:mm"))
+                        if (string.IsNullOrWhiteSpace(json))
                         {
-                            count++;
+                            //Retesta os gateways
+                            this.LoadBestGateway(this._acoes);
+
+                            Thread.Sleep(60000);
                             continue;
                         }
 
-                        if (this._minValues[acoes.Name] != 0 && (last.MinimunPrice < this._minValues[acoes.Name] || last.Price <= this._minValues[acoes.Name]))
-                            this._minValues[acoes.Name] = Math.Min(last.MinimunPrice, last.Price); //Esperasse que seja sempre o mesmo valor
+                        var acoesJsonReader = this.DeserializeJson(json);
+
+                        var errorMessage = string.Empty;
+
+                        if (acoesJsonReader.Value.Count != this._acoes.Length)
+                            errorMessage = $"A URL designada não retornou todos os dados solicitados ({currentGateway}).\r\n    Apenas {acoesJsonReader.Value.Count} de {this._acoes.Length}.";
+
+                        DateTime? lastDate = null;
+
+                        var zeroValue = new List<string>();
+                        if (acoesJsonReader != null)
+                        {
+                            foreach (var jsonAcao in acoesJsonReader.Value)
+                            {
+                                var name = jsonAcao.S;
+                                var acao = new Acao(jsonAcao);
+
+                                lastDate = acao.RequestedDate;
+
+                                if (acao.OppeningPrice <= 0 || acao.Price <= 0)
+                                {
+                                    zeroValue.Add(name);
+                                    continue;
+                                }
+
+                                this.SaveToFile(name, acao);
+
+                                var acoesMonitor = this.AcoesCollections.FirstOrDefault(x => x.Name == name);
+                                if (acoesMonitor != null)
+                                    acoesMonitor.Acoes.Add(acao);
+                                else
+                                    this.AcoesCollections.Add(new AcoesCollection(name, acao));
+                            }
+                        }
+
+                        if (zeroValue.Any())
+                        {
+                            if (!string.IsNullOrWhiteSpace(errorMessage))
+                                errorMessage += Environment.NewLine + Environment.NewLine;
+
+                            errorMessage += $"As Seguintes acões possuem valor zerado ({currentGateway}):{Environment.NewLine}    {string.Join(Environment.NewLine + "    ", zeroValue)}";
+                        }
+
+                        callback(this.AcoesCollections);
+
+                        var count = 0;
+
+                        foreach (var acoes in this.AcoesCollections)
+                        {
+                            var last = acoes.Acoes.LastOrDefault();
+
+                            if (last == null || last.RequestedDate.ToString("dd/MM/yyyy HH:mm") != lastDate.GetValueOrDefault().ToString("dd/MM/yyyy HH:mm"))
+                            {
+                                count++;
+                                continue;
+                            }
+                        }
+
+                        if (count > 0)
+                            this.LoadBestGateway(this._acoes);
+
+                        Thread.Sleep(UPDATE_INTERVAL * 1000);
                     }
-
-                    if (count > 0)
-                        this.LoadBestGateway(this._acoes);
-
-                    Thread.Sleep(UPDATE_INTERVAL * 1000);
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("WebMonitor parou de responder: " + ex.ToString(), "StockMarked", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             });
         }
