@@ -196,6 +196,54 @@ namespace StockMarket
             priceMonitorControl.UpdateControl(acoesMonitorList);
         }
 
+        private void dgvAbstract_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1 || e.ColumnIndex == 3 || e.ColumnIndex == 4) //|| e.ColumnIndex < 5 || e.ColumnIndex > 22)
+                return;
+
+            this.dgvAbstract.CellPainting -= dgvAbstract_CellPainting;
+
+            var row = this.dgvAbstract.Rows[e.RowIndex];
+            var cell = row.Cells[e.ColumnIndex];
+
+            var columnName = cell.OwningColumn.Name;
+            var cellColor = cell.Style.ForeColor;
+
+            if (columnName.StartsWith("Time"))
+            {
+                var valueCell = cell.Value;
+
+                var rowObj = (AbstractRow)row.DataBoundItem;
+                if (Convert.ToDecimal(valueCell) < Convert.ToDecimal(rowObj.Closing))
+                {
+                    if (cellColor != Color.Red)
+                        cell.Style.ForeColor = Color.Red;
+                }
+                else if (Convert.ToDecimal(valueCell) > Convert.ToDecimal(rowObj.Closing))
+                {
+                    if (cellColor != Color.Green)
+                        cell.Style.ForeColor = Color.Green;
+                }
+            }
+            else if (columnName.StartsWith("Rent"))
+            {
+                var valueCell = cell.Value.ToString();
+
+                if (valueCell.StartsWith("-"))
+                {
+                    if (cellColor != Color.Red)
+                        cell.Style.ForeColor = Color.Red;
+                }
+                else if (valueCell != "0,00")
+                {
+                    if (cellColor != Color.Green)
+                        cell.Style.ForeColor = Color.Green;
+                }
+            }
+
+            this.dgvAbstract.CellPainting += dgvAbstract_CellPainting;
+        }
+
         private void tsmConfig_Click(object sender, EventArgs e)
         {
             var form = new ConfigForm();

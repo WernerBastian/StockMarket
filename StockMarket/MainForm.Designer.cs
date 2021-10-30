@@ -217,6 +217,7 @@ namespace StockMarket
             this.dgvAbstract.RowHeadersVisible = false;
             this.dgvAbstract.Size = new System.Drawing.Size(927, 597);
             this.dgvAbstract.TabIndex = 0;
+            this.dgvAbstract.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dgvAbstract_CellPainting);
             // 
             // Day
             // 

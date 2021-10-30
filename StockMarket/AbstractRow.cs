@@ -99,26 +99,14 @@ namespace StockMarket
         public string Time1730
         {
             get { return this._time1730; }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                }
-                this._time1730 = value;
-            }
+            set { this._time1730 = value; }
         }
 
         private string _time1800 = null;
         public string Time1800
         {
             get { return this._time1800; }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                }
-                this._time1800 = value;
-            }
+            set { this._time1800 = value; }
         }
 
         public string RentabilidadePerc { get; set; }
