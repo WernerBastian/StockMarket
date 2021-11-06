@@ -111,7 +111,6 @@
     <Compile Include="WebMonitor.cs" />
     <EmbeddedResource Include="ConfigForm.resx">
       <DependentUpon>ConfigForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -119,7 +118,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PriceMonitorControl.resx">
       <DependentUpon>PriceMonitorControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -148,7 +146,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\icon3.ico" />
+    <None Include="Resources\icon3.png" />
     <Content Include="icon3.ico" />
+    <None Include="Resources\alert-green.png" />
+    <None Include="Resources\alert-orange.png" />
+    <None Include="Resources\alert-red.png" />
+    <None Include="Resources\alert-white.png" />
+    <Content Include="Resources\icon.ico" />
+    <Content Include="Resources\icon.png" />
+    <Content Include="Resources\icon2.ico" />
+    <Content Include="Resources\icon2.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
@@ -161,9 +169,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

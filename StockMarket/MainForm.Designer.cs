@@ -50,6 +50,7 @@ namespace StockMarket
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmClose = new System.Windows.Forms.ToolStripMenuItem();
             this.dgvAbstract = new StockMarket.CustomDataGridView();
+            this.tstStatusIcon = new System.Windows.Forms.ToolStripMenuItem();
             this.Day = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Minimun = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Maximun = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -129,7 +130,8 @@ namespace StockMarket
             // mnsMenu
             // 
             this.mnsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmMenu});
+            this.tsmMenu,
+            this.tstStatusIcon});
             this.mnsMenu.Location = new System.Drawing.Point(0, 0);
             this.mnsMenu.Name = "mnsMenu";
             this.mnsMenu.ShowItemToolTips = true;
@@ -237,6 +239,18 @@ namespace StockMarket
             this.dgvAbstract.TabIndex = 0;
             this.dgvAbstract.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dgvAbstract_CellPainting);
             // 
+            // tstStatusIcon
+            // 
+            this.tstStatusIcon.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.tstStatusIcon.AutoToolTip = true;
+            this.tstStatusIcon.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.tstStatusIcon.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tstStatusIcon.Image = global::StockMarket.Properties.Resources.alert_white;
+            this.tstStatusIcon.Name = "tstStatusIcon";
+            this.tstStatusIcon.Size = new System.Drawing.Size(28, 20);
+            this.tstStatusIcon.Text = "  ";
+            this.tstStatusIcon.ToolTipText = "Desconhecido";
+            // 
             // Day
             // 
             this.Day.DataPropertyName = "Name";
@@ -249,6 +263,7 @@ namespace StockMarket
             // Minimun
             // 
             this.Minimun.DataPropertyName = "Minimun";
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Red;
             this.Minimun.DefaultCellStyle = dataGridViewCellStyle2;
             this.Minimun.HeaderText = "Mínimo";
             this.Minimun.Name = "Minimun";
@@ -258,6 +273,7 @@ namespace StockMarket
             // Maximun
             // 
             this.Maximun.DataPropertyName = "Maximun";
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Green;
             this.Maximun.DefaultCellStyle = dataGridViewCellStyle3;
             this.Maximun.HeaderText = "Máximo";
             this.Maximun.Name = "Maximun";
@@ -458,6 +474,7 @@ namespace StockMarket
         private System.Windows.Forms.ToolStripMenuItem tsmConfig;
         private System.Windows.Forms.ToolStripMenuItem btnRestartApplication;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem tstStatusIcon;
         private TabPage tbpAbstract;
         private CustomDataGridView dgvAbstract;
         private ToolStripMenuItem tsmExportTo;
