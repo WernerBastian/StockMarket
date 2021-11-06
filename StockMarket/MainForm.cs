@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace StockMarket
@@ -194,6 +196,53 @@ namespace StockMarket
             var acoesMonitorList = this._webMonitor.AcoesCollections;
 
             priceMonitorControl.UpdateControl(acoesMonitorList);
+        }
+
+        private void tsmToXml_Click(object sender, EventArgs e)
+        {
+            var sb = new StringBuilder();
+
+            var acoesCollections = this._webMonitor.AcoesCollections;
+
+            if (acoesCollections == null)
+                return;
+
+            acoesCollections = acoesCollections.Where(x => x.Name.ToLower() == "ibov").Concat(acoesCollections.Where(x => x.Name.ToLower() != "ibov")).ToList();
+
+            var table = new List<AbstractRow>();
+
+            foreach (var acao in acoesCollections)
+                table.Add(new AbstractRow(DateTime.Now, acao));
+
+            sb.AppendLine("Dia;Fec. Preg Ant.;Abertura;10:30;1100;1130;1200;1230;1300;1330;1400;1430;1500;1530;1600;1630;1700;1730;1800;Rent/dia %;Ret/dia R$");
+
+            foreach (var row in table)
+            {
+                sb.AppendLine($"{row.Name};{row.Closing};{row.Opening};{row.Time1030};{row.Time1100};{row.Time1130};{row.Time1200};{row.Time1230};{row.Time1300};{row.Time1330};{row.Time1400};" +
+                              $"{row.Time1430};{row.Time1500};{row.Time1530};{row.Time1600};{row.Time1630};{row.Time1700};{row.Time1730};{row.Time1800};{row.RentabilidadePerc};{ row.RentabilidadeValor}");
+            }
+
+            var fileDialog = new SaveFileDialog()
+            {
+                Filter = "CSV|*.csv",
+                Title = "Exportar para CSV",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+
+            };
+
+            // If the file name is not an empty string open it for saving.
+            if (fileDialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(fileDialog.FileName))
+            {
+                var path = fileDialog.FileName;
+
+                if (!path.ToLower().EndsWith(".csv"))
+                    path += ".csv";
+
+                using (var sw = new StreamWriter(path))
+                    sw.Write(sb.ToString());
+
+                MessageBox.Show("Tabela exportada com sucesso", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void dgvAbstract_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)

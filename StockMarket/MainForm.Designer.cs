@@ -44,6 +44,8 @@ namespace StockMarket
             this.mnsMenu = new System.Windows.Forms.MenuStrip();
             this.tsmMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmConfig = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmExportTo = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmToXml = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRestartApplication = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmClose = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,6 +141,7 @@ namespace StockMarket
             // 
             this.tsmMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmConfig,
+            this.tsmExportTo,
             this.btnRestartApplication,
             this.toolStripSeparator1,
             this.tsmClose});
@@ -152,6 +155,21 @@ namespace StockMarket
             this.tsmConfig.Size = new System.Drawing.Size(180, 22);
             this.tsmConfig.Text = "Configurar";
             this.tsmConfig.Click += new System.EventHandler(this.tsmConfig_Click);
+            // 
+            // tsmExportTo
+            // 
+            this.tsmExportTo.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmToXml});
+            this.tsmExportTo.Name = "tsmExportTo";
+            this.tsmExportTo.Size = new System.Drawing.Size(152, 22);
+            this.tsmExportTo.Text = "Exportar para...";
+            // 
+            // tsmToXml
+            // 
+            this.tsmToXml.Name = "tsmToXml";
+            this.tsmToXml.Size = new System.Drawing.Size(98, 22);
+            this.tsmToXml.Text = "XML";
+            this.tsmToXml.Click += new System.EventHandler(this.tsmToXml_Click);
             // 
             // btnRestartApplication
             // 
@@ -442,6 +460,8 @@ namespace StockMarket
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private TabPage tbpAbstract;
         private CustomDataGridView dgvAbstract;
+        private ToolStripMenuItem tsmExportTo;
+        private ToolStripMenuItem tsmToXml;
         private DataGridViewTextBoxColumn Day;
         private DataGridViewTextBoxColumn Minimun;
         private DataGridViewTextBoxColumn Maximun;
